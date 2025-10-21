@@ -1,8 +1,83 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, Suspense } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
-import { Text, OrbitControls, Environment, useGLTF } from "@react-three/drei";
+import { Text, OrbitControls, Environment, useGLTF, Html } from "@react-three/drei";
 import gsap from "gsap";
 import { RiResetLeftFill } from "react-icons/ri";
+
+function Loader() {
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes rotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      @keyframes counterRotate {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(-360deg); }
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.2); opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  const radius = 15;
+  const centerX = 30;
+  const centerY = 30;
+
+  const angles = [0, 120, 240];
+
+  const points = angles.map(angle => {
+    const rad = (angle * Math.PI) / 180;
+    return {
+      x: centerX + radius * Math.cos(rad - Math.PI/2),
+      y: centerY + radius * Math.sin(rad - Math.PI/2)
+    };
+  });
+  
+  return (
+    <Html center>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: '80px',
+        height: '80px',
+        position: 'relative'
+      }}>
+        <div style={{
+          position: 'relative',
+          width: '60px',
+          height: '60px',
+          animation: 'rotate 2s linear infinite'
+        }}>
+          {points.map((point, index) => (
+            <div
+              key={index}
+              style={{
+                position: 'absolute',
+                left: `${point.x - 6}px`,
+                top: `${point.y - 6}px`,
+                width: '12px',
+                height: '12px',
+                borderRadius: '50%',
+                backgroundColor: '#ff5555',
+                animation: `counterRotate 2s linear infinite, pulse 1s ease-in-out infinite ${index * 0.33}s`
+              }}
+            />
+          ))}
+        </div>
+      </div>
+    </Html>
+  );
+}
 
 function SkullModel() {
   const { scene } = useGLTF("/models/cat_skull/scene.gltf");
@@ -93,7 +168,9 @@ export default function App() {
       }}
     >
       <Canvas shadows camera={{ position: [300, 0, 0], fov: 50 }} dpr={[1, 1.5]}>
-        <SceneContent />
+        <Suspense fallback={<Loader />}>
+          <SceneContent />
+        </Suspense>
       </Canvas>
 
       {/* 🔘 Botón de reset */}
@@ -124,3 +201,5 @@ export default function App() {
     </div>
   );
 }
+
+useGLTF.preload("/models/cat_skull/scene.gltf");
