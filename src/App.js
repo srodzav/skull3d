@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, Suspense } from "react";
+import React, { useRef, useEffect, Suspense, useState } from "react";
 import { Canvas, useThree } from "@react-three/fiber";
 import { Text, OrbitControls, Environment, useGLTF, Html } from "@react-three/drei";
 import gsap from "gsap";
@@ -79,59 +79,114 @@ function Loader() {
   );
 }
 
-function SkullModel() {
-  const { scene } = useGLTF("/models/cat_skull/scene.gltf");
-  return <primitive object={scene} scale={2} />;
+const MODELS = {
+  skull: {
+    id: 'skull',
+    name: 'Cat Skull',
+    path: '/models/cat_skull/scene.gltf',
+    scale: 2,
+    position: [0, 0, 0],
+    rotate: [0, 0, 0],
+    cameraPosition: [300, 0, 0],
+    textContent: 'kannssai',
+    textColor: '#ff0000',
+    textPosition: [0, -50, 0],
+    textRotation: [0, Math.PI / 2, 0]
+  },
+  toyota_ae86: {
+    id: 'toyota_ae86',
+    name: 'Toyota AE86',
+    path: '/models/toyota_ae86/scene.gltf',
+    scale: 0.30,
+    position: [0, -20, 0],
+    rotate: [0, Math.PI/4, 0],
+    cameraPosition: [300, 100, 0],
+    textContent: 'kannssai',
+    textColor: '#ff0000',
+    textPosition: [0, -50, 0],
+    textRotation: [0, Math.PI / 2, 0]
+  }
 }
 
-function SceneContent() {
+function DynamicModel({ modelConfig }) {
+  const { scene } = useGLTF(modelConfig.path);
+  return (
+    <primitive 
+      object={scene} 
+      scale={modelConfig.scale} 
+      position={modelConfig.position} 
+      rotation={modelConfig.rotate} 
+    />
+  );
+}
+
+function SceneContent({ selectedModelId }) {
   const controls = useRef();
   const { camera } = useThree();
+  const modelConfig = MODELS[selectedModelId];
+
+  useEffect(() => {
+    gsap.to(camera.position, { 
+      x: modelConfig.cameraPosition[0],
+      y: modelConfig.cameraPosition[1], 
+      z: modelConfig.cameraPosition[2],
+      duration: 1.2, 
+      ease: "power2.inOut" 
+    });
+  }, [selectedModelId, camera, modelConfig.cameraPosition]);
 
   useEffect(() => {
     const reset = () => {
-      gsap.to(camera.position, { x: 300, y: 0, z: 0, duration: 1.2, ease: "power2.inOut" });
+      gsap.to(camera.position, { 
+        x: modelConfig.cameraPosition[0],
+        y: modelConfig.cameraPosition[1], 
+        z: modelConfig.cameraPosition[2],
+        duration: 1.2, 
+        ease: "power2.inOut" 
+      });
       gsap.to(controls.current.target, { x: 0, y: 0, z: 0, duration: 1.2, ease: "power2.inOut" });
     };
 
     window.addEventListener("resetCamera", reset);
     return () => window.removeEventListener("resetCamera", reset);
-  }, [camera]);
+  }, [camera, modelConfig.cameraPosition]);
 
   return (
     <>
-      {/* 💡 Luces cinematográficas */}
+      {/* Luces cinematográficas */}
       <ambientLight intensity={0.3} />
       <directionalLight position={[5, 5, 5]} intensity={1.2} color="#ffffff" />
       <directionalLight position={[-5, -2, -3]} intensity={0.6} color="#ffbbaa" />
       <spotLight position={[0, 10, 10]} angle={0.4} intensity={0.5} color="#aaccff" />
 
-      {/* 🌌 Fondo / ambiente */}
+      {/* Fondo */}
       <Environment preset="studio" />
 
-      {/* 🦴 Modelo */}
-      <SkullModel />
+      {/* Modelo */}
+      <Suspense fallback={<Loader />}>
+        <DynamicModel modelConfig={modelConfig} />
+      </Suspense>
 
-      {/* 🧠 Texto principal */}
+      {/* Texto principal */}
       <Text
-        position={[0, -50, 0]}
-        rotation={[0, Math.PI / 2, 0]}
+        position={modelConfig.textPosition}
+        rotation={modelConfig.textRotation}
         fontSize={20}
         font="/fonts/go3v2.ttf"
         anchorX="center"
         anchorY="middle"
       >
         <meshStandardMaterial
-          color="#ff0000"
-          emissive="#ff0000"
+          color={modelConfig.textColor}
+          emissive={modelConfig.textColor}
           emissiveIntensity={0.4}
           metalness={0.3}
           roughness={0.4}
         />
-        kannssai
+        {modelConfig.textContent}
       </Text>
 
-      {/* 🥚 Easter egg oculto */}
+      {/* Easter egg */}
       <Text
         position={[0, 0, 0]}
         rotation={[0, Math.PI / 2, 0]}
@@ -148,15 +203,31 @@ function SceneContent() {
           roughness={0.6}
         />
         you weren’t supposed to find this
-      </Text>
+      </Text> 
 
-      {/* 🎮 Controles de cámara */}
+      {/* Cámara */}
       <OrbitControls ref={controls} enableZoom enablePan={false} />
     </>
   );
 }
 
 export default function App() {
+  const [selectedModel, setSelectedModel] = useState('skull');
+  const [isChangingModel, setIsChangingModel] = useState(false);
+
+  const handleModelChange = (e) => {
+    const newModel = e.target.value;
+
+    if (newModel !== selectedModel) {
+      setIsChangingModel(true);
+
+      setTimeout(() => {
+        setSelectedModel(newModel);
+        setIsChangingModel(false);
+      }, 1000);
+    }
+  };
+
   return (
     <div
       style={{
@@ -167,13 +238,51 @@ export default function App() {
         overflow: "hidden",
       }}
     >
+      <select
+        value={selectedModel}
+        onChange={handleModelChange}
+        style={{
+          position: "absolute",
+          top: "50px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          background: "rgba(255, 0, 0, 0.15)",
+          color: "#ff5555",
+          border: "1px solid #ff3333",
+          borderRadius: "10px",
+          padding: "5px 10px",
+          fontFamily: "monospace",
+          fontSize: "1rem",
+          letterSpacing: "1px",
+          cursor: "pointer",
+          backdropFilter: "blur(6px)",
+          transition: "all 0.2s ease",
+          zIndex: 1000,
+          pointerEvents: "auto",
+          appearance: "auto",
+          WebkitAppearance: "auto",
+        }}
+        onMouseEnter={(e) => (e.target.style.background = "rgba(255,0,0,0.25)")}
+        onMouseLeave={(e) => (e.target.style.background = "rgba(255,0,0,0.15)")}
+      >
+        {Object.values(MODELS).map(model => (
+          <option key={model.id} value={model.id}>
+            {model.name}
+          </option>
+        ))}
+      </select>
+
       <Canvas shadows camera={{ position: [300, 0, 0], fov: 50 }} dpr={[1, 1.5]}>
         <Suspense fallback={<Loader />}>
-          <SceneContent />
-        </Suspense>
-      </Canvas>
+        {isChangingModel ? (
+          <Loader />
+        ) : (
+          <SceneContent selectedModelId={selectedModel} />
+        )}
+      </Suspense>
+    </Canvas>
 
-      {/* 🔘 Botón de reset */}
+      {/* reset */}
       <button
         onClick={() => window.dispatchEvent(new Event("resetCamera"))}
         style={{
@@ -202,4 +311,6 @@ export default function App() {
   );
 }
 
-useGLTF.preload("/models/cat_skull/scene.gltf");
+Object.values(MODELS).forEach(model => {
+  useGLTF.preload(model.path);
+});
