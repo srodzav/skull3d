@@ -106,19 +106,6 @@ const MODELS = {
     textColor: '#ff0000',
     textPosition: [0, -50, 0],
     textRotation: [0, Math.PI / 2, 0]
-  },
-  toyota_ae86: {
-    id: 'toyota_ae86',
-    name: 'Toyota AE86',
-    path: '/models/toyota_ae86/scene.gltf',
-    scale: 0.30,
-    position: [0, -20, 0],
-    rotate: [0, Math.PI/4, 0],
-    cameraPosition: [300, 100, 0],
-    textContent: 'kannssai',
-    textColor: '#ff0000',
-    textPosition: [0, -50, 0],
-    textRotation: [0, Math.PI / 2, 0]
   }
 }
 
