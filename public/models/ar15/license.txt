@@ -1,0 +1,11 @@
+Model Information:
+* title:	AR15
+* source:	https://sketchfab.com/3d-models/ar15-4728f22de29a43a3bc222f8389005ca2
+* author:	TORI106 (https://sketchfab.com/TORI106)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "AR15" (https://sketchfab.com/3d-models/ar15-4728f22de29a43a3bc222f8389005ca2) by TORI106 (https://sketchfab.com/TORI106) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

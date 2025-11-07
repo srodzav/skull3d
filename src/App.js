@@ -94,6 +94,19 @@ const MODELS = {
     textPosition: [0, -50, 0],
     textRotation: [0, Math.PI / 2, 0]
   },
+  ar15: {
+    id: 'ar15',
+    name: 'AR15',
+    path: '/models/ar15/scene.gltf',
+    scale: 35,
+    position: [0, -30, 0],
+    rotate: [0, Math.PI / 2.8, 0],
+    cameraPosition: [300, 100, 0],
+    textContent: 'kannssai',
+    textColor: '#ff0000',
+    textPosition: [0, -50, 0],
+    textRotation: [0, Math.PI / 2, 0]
+  },
   toyota_ae86: {
     id: 'toyota_ae86',
     name: 'Toyota AE86',
