@@ -3,6 +3,7 @@ import { Canvas, useThree } from "@react-three/fiber";
 import { Text, OrbitControls, Environment, useGLTF, Html } from "@react-three/drei";
 import gsap from "gsap";
 import { RiResetLeftFill } from "react-icons/ri";
+import { FaLock, FaUnlock } from "react-icons/fa";
 
 function Loader() {
   useEffect(() => {
@@ -120,7 +121,7 @@ function DynamicModel({ modelConfig }) {
   );
 }
 
-function SceneContent({ selectedModelId }) {
+function SceneContent({ selectedModelId, isLocked, setIsLocked }) {
   const controls = useRef();
   const { camera } = useThree();
   const modelConfig = MODELS[selectedModelId];
@@ -150,6 +151,23 @@ function SceneContent({ selectedModelId }) {
     window.addEventListener("resetCamera", reset);
     return () => window.removeEventListener("resetCamera", reset);
   }, [camera, modelConfig.cameraPosition]);
+
+  const handleLockToggle = () => {
+    gsap.to(camera.position, { 
+      x: modelConfig.cameraPosition[0],
+      y: modelConfig.cameraPosition[1], 
+      z: modelConfig.cameraPosition[2],
+      duration: 1.2, 
+      ease: "power2.inOut" 
+    });
+    gsap.to(controls.current.target, { x: 0, y: 0, z: 0, duration: 1.2, ease: "power2.inOut" });
+    setIsLocked(!isLocked);
+  };
+
+  useEffect(() => {
+    window.addEventListener("toggleLock", handleLockToggle);
+    return () => window.removeEventListener("toggleLock", handleLockToggle);
+  }, [isLocked, modelConfig.cameraPosition]);
 
   return (
     <>
@@ -206,7 +224,15 @@ function SceneContent({ selectedModelId }) {
       </Text> 
 
       {/* Cámara */}
-      <OrbitControls ref={controls} enableZoom enablePan={false} />
+      <OrbitControls 
+        ref={controls} 
+        enableZoom={true}
+        enableRotate={true}
+        enablePan={!isLocked}
+        maxDistance={isLocked ? 500 : 600}
+        minPolarAngle={isLocked ? Math.PI/6 : 0}
+        maxPolarAngle={isLocked ? Math.PI*5/6 : Math.PI}
+      />
     </>
   );
 }
@@ -214,12 +240,14 @@ function SceneContent({ selectedModelId }) {
 export default function App() {
   const [selectedModel, setSelectedModel] = useState('skull');
   const [isChangingModel, setIsChangingModel] = useState(false);
+  const [isLocked, setIsLocked] = useState(true);
 
   const handleModelChange = (e) => {
     const newModel = e.target.value;
 
     if (newModel !== selectedModel) {
       setIsChangingModel(true);
+      setIsLocked(true);
 
       setTimeout(() => {
         setSelectedModel(newModel);
@@ -277,10 +305,46 @@ export default function App() {
         {isChangingModel ? (
           <Loader />
         ) : (
-          <SceneContent selectedModelId={selectedModel} />
+          <SceneContent 
+            selectedModelId={selectedModel} 
+            isLocked={isLocked}
+            setIsLocked={setIsLocked}
+          />
         )}
       </Suspense>
     </Canvas>
+
+    {/* lock */}
+      <button
+        onClick={() => window.dispatchEvent(new Event("toggleLock"))}
+        style={{
+          position: "absolute",
+          bottom: "20px",
+          left: "calc(50% - 60px)",
+          transform: "translateX(-50%)",
+          background: isLocked ? "rgba(255, 0, 0, 0.15)" : "rgba(0, 255, 0, 0.15)",
+          color: isLocked ? "#ff5555" : "#55ff55",
+          border: isLocked ? "1px solid #ff3333" : "1px solid #33ff33",
+          borderRadius: "10px",
+          padding: "5px 10px",
+          fontFamily: "monospace",
+          fontSize: "1rem",
+          letterSpacing: "1px",
+          cursor: "pointer",
+          backdropFilter: "blur(6px)",
+          transition: "all 0.2s ease",
+        }}
+        onMouseEnter={(e) => {
+          e.target.style.background = isLocked ? "rgba(255,0,0,0.25)" : "rgba(0,255,0,0.25)";
+          e.target.style.transform = "translateX(-50%) scale(1.05)";
+        }}
+        onMouseLeave={(e) => {
+          e.target.style.background = isLocked ? "rgba(255,0,0,0.15)" : "rgba(0,255,0,0.15)";
+          e.target.style.transform = "translateX(-50%) scale(1)";
+        }}
+      >
+        {isLocked ? <FaLock /> : <FaUnlock />}
+      </button>
 
       {/* reset */}
       <button
@@ -288,7 +352,7 @@ export default function App() {
         style={{
           position: "absolute",
           bottom: "20px",
-          left: "50%",
+          left: "calc(50% + 60px)",
           transform: "translateX(-50%)",
           background: "rgba(255, 0, 0, 0.15)",
           color: "#ff5555",
