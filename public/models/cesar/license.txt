@@ -1,0 +1,11 @@
+Model Information:
+* title:	César - Louvre Museum
+* source:	https://sketchfab.com/3d-models/cesar-louvre-museum-30f43907f7814582b5dacbbadbabbe6d
+* author:	Benjamin Bardou (https://sketchfab.com/meryon)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "César - Louvre Museum" (https://sketchfab.com/3d-models/cesar-louvre-museum-30f43907f7814582b5dacbbadbabbe6d) by Benjamin Bardou (https://sketchfab.com/meryon) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
